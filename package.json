@@ -1,0 +1,45 @@
+{
+  "version": "0.0.0",
+  "scripts": {
+    "test": "node --eval \"require('./output/Test.Main').main();\"",
+    "start": "node --eval \"require('./output/Main').main();\"",
+    "serve": "parcel ./index.html",
+    "repl": "psc-package repl -- 'test/**/*.purs'",
+    "purs": "purs",
+    "psc-package": "psc-package",
+    "prepare": "npm-run-all -s 'install:purs' build",
+    "install:purs": "psc-package install",
+    "bundle:purs": "purs bundle 'output/**/*.js' --main Main --module Main --output bundle.js",
+    "bundle:parcel": "parcel build ./index.html",
+    "bundle": "npm-run-all -s 'bundle:purs' 'bundle:parcel'",
+    "build": "psc-package sources | xargs purs compile 'src/**/*.purs' 'test/**/*.purs'"
+  },
+  "repository": {
+    "url": "git+https://github.com/bouzuya/purescript-react-basic-contacts.git",
+    "type": "git"
+  },
+  "name": "purescript-react-basic-contacts",
+  "main": "index.js",
+  "license": "MIT",
+  "keywords": [],
+  "homepage": "https://github.com/bouzuya/purescript-react-basic-contacts#readme",
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "parcel-bundler": "^1.10.3",
+    "psc-package": "^3.0.0",
+    "purescript": "^0.12.1"
+  },
+  "description": "[MIT](LICENSE)",
+  "bugs": {
+    "url": "https://github.com/bouzuya/purescript-react-basic-contacts/issues"
+  },
+  "author": {
+    "url": "https://bouzuya.net/",
+    "name": "bouzuya",
+    "email": "m@bouzuya.net"
+  },
+  "dependencies": {
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3"
+  }
+}
