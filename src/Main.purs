@@ -3,7 +3,7 @@ module Main
   ) where
 
 import Component as Component
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (maybe)
 import Effect (Effect)
 import Effect.Exception (throw)
 import Prelude (Unit, bind, pure)
