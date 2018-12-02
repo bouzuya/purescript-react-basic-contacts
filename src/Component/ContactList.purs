@@ -2,10 +2,11 @@ module Component.ContactList
   ( contactList
   ) where
 
-import Prelude
-
-import React.Basic (Component, JSX, StateUpdate(..), createComponent, make)
+import Data.Maybe (fromMaybe)
+import Prelude ((<#>), (<>))
+import React.Basic (Component, JSX, StateUpdate(..), capture, createComponent, make)
 import React.Basic.DOM as H
+import React.Basic.DOM.Events (preventDefault, targetValue)
 
 type Contact =
   { name :: String
@@ -18,6 +19,10 @@ type Props =
 
 data Action
   = Noop
+  | UpdateName String
+  | UpdateAddress String
+  | UpdateTel String
+  | AddContact
 
 component :: Component Props
 component = createComponent "ContactList"
@@ -25,8 +30,14 @@ component = createComponent "ContactList"
 contactList :: JSX
 contactList = make component { initialState, render, update } {}
   where
+    initialContact =
+      { name: ""
+      , address: ""
+      , tel: ""
+      }
     initialState =
-      { contactList:
+      { contactForm: initialContact
+      , contactList:
         [ { name: "JR 三ノ宮駅"
           , address: "神戸市中央区布引町四丁目1-1"
           , tel: "999-999-9999"
@@ -38,10 +49,47 @@ contactList = make component { initialState, render, update } {}
         ]
       }
 
-    render self@{ state: { contactList: list }} =
+    render self@{ state: { contactForm: form, contactList: list } } =
       H.div_
       [ H.h1_
         [ H.text "Contacts" ]
+      , H.div_
+        [ H.label_
+          [ H.span_ [ H.text "name" ]
+          , H.input
+            { onChange:
+                capture self targetValue (\v -> UpdateName (fromMaybe "" v))
+            , value: form.name
+            }
+          ]
+        , H.br {}
+        , H.label_
+          [ H.span_ [ H.text "address" ]
+          , H.input
+            { onChange:
+                capture self targetValue (\v -> UpdateAddress (fromMaybe "" v))
+            , value: form.address
+            }
+          ]
+        , H.br {}
+        , H.label_
+          [ H.span_ [ H.text "tel" ]
+          , H.input
+            { onChange:
+                capture self targetValue (\v -> UpdateTel (fromMaybe "" v))
+            , value: form.tel
+            }
+          ]
+        , H.br {}
+        , H.button
+          { onClick:
+              capture
+                self
+                preventDefault
+                (\_ -> AddContact)
+          , children: [ H.text "Add" ]
+          }
+        ]
       , H.ul_
         ( list <#>
           \contact ->
@@ -57,3 +105,15 @@ contactList = make component { initialState, render, update } {}
 
     update { state } = case _ of
       Noop -> Update state
+      UpdateName v ->
+        Update state { contactForm = state.contactForm { name = v } }
+      UpdateAddress v ->
+        Update state { contactForm = state.contactForm { address = v } }
+      UpdateTel v ->
+        Update state { contactForm = state.contactForm { tel = v } }
+      AddContact ->
+        Update
+          state
+            { contactForm = initialContact
+            , contactList = state.contactList <> [state.contactForm]
+            }
