@@ -18,8 +18,7 @@ type Props =
   {}
 
 data Action
-  = Noop
-  | UpdateName String
+  = UpdateName String
   | UpdateAddress String
   | UpdateTel String
   | AddContact
@@ -104,7 +103,6 @@ contactList = make component { initialState, render, update } {}
       ]
 
     update { state } = case _ of
-      Noop -> Update state
       UpdateName v ->
         Update state { contactForm = state.contactForm { name = v } }
       UpdateAddress v ->
