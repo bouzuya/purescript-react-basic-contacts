@@ -4,6 +4,14 @@
 
 contacts
 
+## How to run
+
+```
+$ npm install
+$ npm run serve # for development
+$ npm run bundle # for production
+```
+
 ## License
 
 [MIT](LICENSE)
