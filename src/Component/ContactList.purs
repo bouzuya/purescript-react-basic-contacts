@@ -4,8 +4,8 @@ module Component.ContactList
 
 import Component.ContactForm as ContactForm
 import Data.Array as Array
-import Data.Maybe (Maybe(..))
-import Prelude ((<#>), (<>))
+import Data.Maybe (Maybe(..), fromMaybe)
+import Prelude (const, join, map, (<#>), (<>))
 import React.Basic (Component, JSX, StateUpdate(..), createComponent, make, send)
 import React.Basic.DOM as H
 
@@ -52,7 +52,7 @@ contactList = make component { initialState, render, update } {}
       [ H.h1_
         [ H.text "Contacts" ]
       , ContactForm.contactForm
-        { edit
+        { edit: join (map (Array.index list) edit)
         , onSubmit: \c -> send self (UpdateContact c)
         }
       , H.ul_
@@ -74,5 +74,8 @@ contactList = make component { initialState, render, update } {}
           state
             { contactList = case state.edit of
                 Nothing -> state.contactList <> [contact]
-                Just c -> state.contactList <> [contact] -- TODO
+                Just index ->
+                  fromMaybe
+                    state.contactList -- TODO: error
+                    (Array.modifyAt index (const contact) state.contactList)
             }
