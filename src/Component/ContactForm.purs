@@ -86,4 +86,6 @@ contactForm = make component { initialState, render, update }
       UpdateTel v ->
         Update state { contactForm = state.contactForm { tel = v } }
       AddContact ->
-        SideEffects (const (onAdd state.contactForm))
+        UpdateAndSideEffects
+          state { contactForm = initialContact }
+          (const (onAdd state.contactForm))
