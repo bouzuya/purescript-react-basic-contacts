@@ -2,12 +2,13 @@ module Component.ContactForm
   ( contactForm
   ) where
 
-import Data.Maybe (Maybe, fromMaybe)
+import Data.Maybe (fromMaybe)
 import Effect (Effect)
-import Prelude (Unit, const)
-import React.Basic (Component, JSX, StateUpdate(..), capture, createComponent, make)
+import Prelude (Unit)
+import React.Basic (Component, JSX, createComponent, makeStateless)
 import React.Basic.DOM as H
 import React.Basic.DOM.Events (preventDefault, targetValue)
+import React.Basic.Events (handler)
 
 type Contact =
   { name :: String
@@ -16,40 +17,28 @@ type Contact =
   }
 
 type Props =
-  { edit :: Maybe Contact
+  { contact :: Contact
   , onSubmit :: Contact -> Effect Unit
+  , onUpdate :: Contact -> Effect Unit
   }
 
-data Action
-  = UpdateName String
-  | UpdateAddress String
-  | UpdateTel String
-  | Submit
-
 component :: Component Props
-component = createComponent "ContactList"
+component = createComponent "ContactForm"
 
 contactForm :: Props -> JSX
-contactForm props = make component { initialState, render, update } props
-  where
-    initialContact =
-      { name: ""
-      , address: ""
-      , tel: ""
-      }
-
-    initialState =
-      { contactForm: fromMaybe initialContact props.edit
-      }
-
-    render self@{ props: { onSubmit }, state: { contactForm: form } } =
+contactForm =
+  makeStateless
+    component
+    \{ contact, onSubmit, onUpdate } ->
       H.div_
       [ H.label_
         [ H.span_ [ H.text "name" ]
         , H.input
           { onChange:
-              capture self targetValue (\v -> UpdateName (fromMaybe "" v))
-          , value: form.name
+              handler
+                targetValue
+                (\v -> onUpdate contact { name = (fromMaybe "" v) })
+          , value: contact.name
           }
         ]
       , H.br {}
@@ -57,8 +46,10 @@ contactForm props = make component { initialState, render, update } props
         [ H.span_ [ H.text "address" ]
         , H.input
           { onChange:
-              capture self targetValue (\v -> UpdateAddress (fromMaybe "" v))
-          , value: form.address
+              handler
+                targetValue
+                (\v -> onUpdate contact { address = (fromMaybe "" v) })
+          , value: contact.address
           }
         ]
       , H.br {}
@@ -66,29 +57,18 @@ contactForm props = make component { initialState, render, update } props
         [ H.span_ [ H.text "tel" ]
         , H.input
           { onChange:
-              capture self targetValue (\v -> UpdateTel (fromMaybe "" v))
-          , value: form.tel
+              handler
+                targetValue
+                (\v -> onUpdate contact { tel = (fromMaybe "" v) })
+          , value: contact.tel
           }
         ]
       , H.br {}
       , H.button
         { onClick:
-            capture
-              self
+            handler
               preventDefault
-              (\_ -> Submit)
+              (\_ -> onSubmit contact)
         , children: [ H.text "OK" ]
         }
       ]
-
-    update { props: { onSubmit }, state } = case _ of
-      UpdateName v ->
-        Update state { contactForm = state.contactForm { name = v } }
-      UpdateAddress v ->
-        Update state { contactForm = state.contactForm { address = v } }
-      UpdateTel v ->
-        Update state { contactForm = state.contactForm { tel = v } }
-      Submit ->
-        UpdateAndSideEffects
-          state { contactForm = initialContact }
-          (const (onSubmit state.contactForm))
