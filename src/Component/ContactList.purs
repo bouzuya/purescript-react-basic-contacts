@@ -3,6 +3,8 @@ module Component.ContactList
   ) where
 
 import Component.ContactForm as ContactForm
+import Data.Array as Array
+import Data.Maybe (Maybe(..))
 import Prelude ((<#>), (<>))
 import React.Basic (Component, JSX, StateUpdate(..), createComponent, make, send)
 import React.Basic.DOM as H
@@ -17,7 +19,7 @@ type Props =
   {}
 
 data Action
-  = AddContact Contact
+  = UpdateContact Contact
 
 component :: Component Props
 component = createComponent "ContactList"
@@ -42,13 +44,17 @@ contactList = make component { initialState, render, update } {}
           , tel: "999-999-9999"
           }
         ]
+      , edit: Nothing
       }
 
-    render self@{ state: { contactForm: form, contactList: list } } =
+    render self@{ state: { contactForm: form, contactList: list, edit } } =
       H.div_
       [ H.h1_
         [ H.text "Contacts" ]
-      , ContactForm.contactForm { onAdd: \c -> send self (AddContact c) }
+      , ContactForm.contactForm
+        { edit
+        , onSubmit: \c -> send self (UpdateContact c)
+        }
       , H.ul_
         ( list <#>
           \contact ->
@@ -63,8 +69,10 @@ contactList = make component { initialState, render, update } {}
       ]
 
     update { state } = case _ of
-      AddContact contact ->
+      UpdateContact contact ->
         Update
           state
-            { contactList = state.contactList <> [contact]
+            { contactList = case state.edit of
+                Nothing -> state.contactList <> [contact]
+                Just c -> state.contactList <> [contact] -- TODO
             }

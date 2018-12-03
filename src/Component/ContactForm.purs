@@ -2,7 +2,7 @@ module Component.ContactForm
   ( contactForm
   ) where
 
-import Data.Maybe (fromMaybe)
+import Data.Maybe (Maybe, fromMaybe)
 import Effect (Effect)
 import Prelude (Unit, const)
 import React.Basic (Component, JSX, StateUpdate(..), capture, createComponent, make)
@@ -16,30 +16,33 @@ type Contact =
   }
 
 type Props =
-  { onAdd :: Contact -> Effect Unit }
+  { edit :: Maybe Contact
+  , onSubmit :: Contact -> Effect Unit
+  }
 
 data Action
   = UpdateName String
   | UpdateAddress String
   | UpdateTel String
-  | AddContact
+  | Submit
 
 component :: Component Props
 component = createComponent "ContactList"
 
 contactForm :: Props -> JSX
-contactForm = make component { initialState, render, update }
+contactForm props = make component { initialState, render, update } props
   where
     initialContact =
       { name: ""
       , address: ""
       , tel: ""
       }
+
     initialState =
-      { contactForm: initialContact
+      { contactForm: fromMaybe initialContact props.edit
       }
 
-    render self@{ props: { onAdd }, state: { contactForm: form } } =
+    render self@{ props: { onSubmit }, state: { contactForm: form } } =
       H.div_
       [ H.label_
         [ H.span_ [ H.text "name" ]
@@ -73,19 +76,19 @@ contactForm = make component { initialState, render, update }
             capture
               self
               preventDefault
-              (\_ -> AddContact)
-        , children: [ H.text "Add" ]
+              (\_ -> Submit)
+        , children: [ H.text "OK" ]
         }
       ]
 
-    update { props: { onAdd }, state } = case _ of
+    update { props: { onSubmit }, state } = case _ of
       UpdateName v ->
         Update state { contactForm = state.contactForm { name = v } }
       UpdateAddress v ->
         Update state { contactForm = state.contactForm { address = v } }
       UpdateTel v ->
         Update state { contactForm = state.contactForm { tel = v } }
-      AddContact ->
+      Submit ->
         UpdateAndSideEffects
           state { contactForm = initialContact }
-          (const (onAdd state.contactForm))
+          (const (onSubmit state.contactForm))
